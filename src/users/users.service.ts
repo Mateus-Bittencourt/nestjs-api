@@ -1,16 +1,21 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  // forwardRef,
+  // Inject,
+  Injectable,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 // import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
-import { AuthService } from 'src/auth/auth.service';
-import { json } from 'stream/consumers';
+import * as jwt from 'jsonwebtoken';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UsersService {
   constructor(
     private prisma: PrismaService,
-    private authService: AuthService,
+    private jwtService: JwtService
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -34,10 +39,14 @@ export class UsersService {
         id: true,
       }, // code from chatgpt
     });
-    if (createdUser) {
-      const token = this.authService.generateJWT(createdUser.id);
-      return { token };
-    }
+    return createdUser;
+    // console.log(createdUser);
+    // if (createdUser) {
+    //   const payload = { username: createdUser.username, sub: createdUser.id };
+    //   return {
+    //     access_token: await this.jwtService.sign(payload),
+    //   };
+    // }
   }
 
   findAll() {
@@ -49,6 +58,16 @@ export class UsersService {
       where: { username },
     });
   }
+
+  // generateJWT(id: number) {
+  //   const jwtSecret =
+  //     process.env.JWT_SECRET ||
+  //     '085B5CF3FB261C9CF855E99D64ED02CE299412977C3D713C850FD98C89CB4FF2';
+  //   if (!jwtSecret)
+  //     throw new Error('JWT_SECRET is not defined in environment variables'); //code from chatgpt
+    
+  //   return jwt.sign({ id }, jwtSecret, { expiresIn: '1d' });
+  // }
 
   // update(id: number, updateUserDto: UpdateUserDto) {
   //   return `This action updates a #${id} user`;
